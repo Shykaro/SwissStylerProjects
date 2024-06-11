@@ -1,6 +1,6 @@
 import { SyncServer } from './ircam-sync/server.js';
 import express from 'express';
-import WebSocket from 'ws';
+import WebSocket, { WebSocketServer } from 'ws';
 import http from 'http';
 import appConfig from './config.js';
 import paramConfig from './params.js';
@@ -23,7 +23,7 @@ app.use(express.static('.'));
 /****************************************************************
  * websocket server
  */
-const webSocketServer = new WebSocket.Server({ server: httpServer });
+const webSocketServer = new WebSocketServer({ server: httpServer });
 console.log(`websocket server listening`);
 
 webSocketServer.on('connection', (socket, req) => {

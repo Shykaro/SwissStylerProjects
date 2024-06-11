@@ -403,7 +403,7 @@ const colorMap = [
   '#CAFA79', '#FFFF64', '#FF9EFF', '#007AFF'
 ];
 
-class Circle {
+class Circle { //Main class for letting the circles appear
   constructor(id, x, y, options) {
     this.id = id;
     this.x = x;
