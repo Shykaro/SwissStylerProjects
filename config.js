@@ -1,5 +1,5 @@
 export default {
-  'title': 'Drops',
-  'websocket-url': '10.136.8.65',
-  'server-port': 80,
-}
+  'title': 'Game',
+  'websocket-url': 'ws://10.136.2.231:3000/',  // Dedicated IP address
+  'server-port': 3000
+};
