@@ -9,7 +9,7 @@ html {
     height: 100%;
     overflow: hidden;
     padding: 0;
-    margin: 0;
+    margin: 0 auto;
     font-family: Avenir, Helvetica, sans-serif;
     font-size: 1em;
     line-height: 1.3em;
@@ -98,7 +98,7 @@ html {
   .controller-param .label {
     display: inline-block;
     width: 4em;
-    text-align: right;
+    text-align: center;
     pointer-events: all;
     margin-right: 0.3em;
   }
@@ -186,7 +186,7 @@ html {
     display: inline-block;
     width: 2em;
     font-size: 1.1em;
-    text-align: right;
+    text-align: center;
   }
   
   .button[data-name="clear"] {
@@ -201,18 +201,32 @@ html {
   /**********************************************************
    * start-game-button
    */
-  #start-game-button {
+   #start-game-button {
     position: relative;
     z-index: 10;
-    padding: 0.5em 1em;
-    background-color: #007bff;
+    padding: 0.75em 1.5em; /* Größeres Padding für besseren Look */
+    background-color: #007bff; /* Hauptfarbe */
+    background-image: linear-gradient(to right, #007bff, #0056b3); /* Verläufe hinzufügen */
     color: white;
     border: none;
-    border-radius: 0.25em;
+    border-radius: 0.5em; /* Mehr abgerundete Ecken */
     cursor: pointer;
-    font-size: 1em;
+    font-size: 1.2em; /* Größere Schrift */
     margin: 1em 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Schatten für Tiefe */
+    transition: background-color 0.3s ease, transform 0.3s ease; /* Sanfte Übergänge */
   }
+  
+  #start-game-button:hover {
+    background-color: #0056b3; /* Farbe bei Hover */
+    transform: scale(1.05); /* Leichte Vergrößerung bei Hover */
+  }
+  
+  #start-game-button:active {
+    background-color: #003f7f; /* Dunklere Farbe bei Aktiv */
+    transform: scale(0.95); /* Leichte Verkleinerung bei Aktiv */
+  }
+  
   
   #start-game-button:hover {
     background-color: #0056b3;
