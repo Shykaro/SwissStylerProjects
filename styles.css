@@ -14,7 +14,7 @@ body {
   font-size: 1em;
   line-height: 1.3em;
   color: #fff;
-  background-color: #0000ff; /* Initial background color */
+  background-color: #000000; /* Initial background color */
   transition: background-color 0.2s; /* Smooth transition for background color */
   -webkit-touch-callout: none;
   -webkit-user-select: none;

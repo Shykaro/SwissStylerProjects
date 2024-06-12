@@ -46,6 +46,7 @@ function changeBackgroundColor(color) {
   console.log('Changing background color to:', color);
   document.body.style.backgroundColor = color;
   setTimeout(() => {
+    console.log('Resetting background color to black');
     document.body.style.backgroundColor = '#000';
   }, 200);
 }
