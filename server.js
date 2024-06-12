@@ -67,6 +67,7 @@ webSocketServer.on('connection', (socket, req) => {
           switch (message[0]) {
             case 'player-ready':
               readyCount++;
+              broadcastToControllers(['player-ready', playerCount - 1, assignedColor]);
               broadcastToControllers(['player-count', playerCount, readyCount]);
               break;
             case 'draw-point':
