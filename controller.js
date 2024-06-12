@@ -98,6 +98,7 @@ function updatePlayerStates(states) {
       const box = document.createElement('div');
       box.classList.add('player-box');
       box.setAttribute('data-index', boxIndex);
+      box.classList.add('player-box' + boxIndex);
       playerReadyContainer.appendChild(box);
       playerBoxes[boxIndex] = box;
       console.log(`Created box for player ${boxIndex}`);

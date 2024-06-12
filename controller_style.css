@@ -14,7 +14,7 @@ html {
     font-size: 1em;
     line-height: 1.3em;
     color: #fff;
-    background-color: #89CBFF;
+    background-color: black;
     transition-property: background-color;
     transition-duration: 4s;
     -webkit-touch-callout: none;
@@ -25,6 +25,20 @@ html {
     user-select: none;
     touch-action: pan-y;
   }
+  h1 {
+    color: rgb(255, 255, 255);
+    padding: 50px;
+  }
+  #demotext {
+    color: #FFFFFF;
+    background: #333333;
+    text-shadow: #FFF 0px 0px 5px, #FFF 0px 0px 10px, #FFF 0px 0px 15px, #FF2D95 0px 0px 20px, #FF2D95 0px 0px 30px, #FF2D95 0px 0px 40px, #FF2D95 0px 0px 50px, #FF2D95 0px 0px 75px;
+    color: #FFFFFF;
+    background: black;
+    font-size: 36px;
+    margin: 20px;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif
+    }
   
   /**********************************************************
    * player
