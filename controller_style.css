@@ -31,7 +31,6 @@ html {
   }
   #demotext {
     color: #FFFFFF;
-    background: #333333;
     text-shadow: #FFF 0px 0px 5px, #FFF 0px 0px 10px, #FFF 0px 0px 15px, #FF2D95 0px 0px 20px, #FF2D95 0px 0px 30px, #FF2D95 0px 0px 40px, #FF2D95 0px 0px 50px, #FF2D95 0px 0px 75px;
     color: #FFFFFF;
     background: black;
@@ -246,3 +245,25 @@ html {
     background-color: #0056b3;
   }
   
+  /**********************************************************
+ * Player box adjustments
+ */
+
+#player-ready-container {
+  display: flex;
+  flex-wrap: wrap;
+  margin: 1em 0;
+}
+
+.player-box {
+  width: 50px;
+  height: 50px;
+  margin: 5px;
+  border: 2px solid #fff;
+  background-color: #000; /* Initial background color */
+  transition: background-color 0.2s;
+}
+
+#start-game-button:hover {
+  background-color: #0056b3;
+}
