@@ -1,13 +1,13 @@
 import config from './config.js';
 
 const socket = new WebSocket(config['websocket-url']);
-let playerIndex = null;
+let playerId = localStorage.getItem('playerId');
 let isGameStarted = false;
 let playerColor = null;
 
 socket.addEventListener('open', () => {
   console.log('WebSocket connection opened');
-  sendMessage(['get-params']);
+  sendMessage(['player-connect', playerId]);
 });
 
 socket.addEventListener('message', (event) => {
@@ -17,9 +17,10 @@ socket.addEventListener('message', (event) => {
       console.log('Message received from server:', data);
       switch (data[0]) {
         case 'player-index':
-          playerIndex = data[1];
+          playerId = data[1];
+          localStorage.setItem('playerId', playerId);
           playerColor = data[2];
-          console.log(`Player index: ${playerIndex}, color: ${playerColor}`);
+          console.log(`Player index: ${playerId}, color: ${playerColor}`);
           displayMessage('Tap screen to start!', true);
           window.addEventListener('touchend', startPlaying);
           break;
@@ -44,7 +45,7 @@ function sendMessage(message) {
 
 function startPlaying() {
   window.removeEventListener('touchend', startPlaying);
-  sendMessage(['player-ready', playerIndex]);
+  sendMessage(['player-ready', playerId]);
   displayMessage('Ready to play!');
   window.addEventListener('touchend', sendTouchPosition);
 }
