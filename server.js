@@ -1,6 +1,7 @@
 import express from 'express';
 import http from 'http';
 import { createRequire } from 'module';
+import { v4 as uuidv4 } from 'uuid'; // Correct import for 'uuid'
 import config from './config.js';
 
 const require = createRequire(import.meta.url);
@@ -12,10 +13,10 @@ const app = express();
 const httpServer = http.createServer(app);
 const webSocketServer = new WebSocketServer({ server: httpServer });
 
-let playerCount = 0;
-let readyCount = 0;
+const playerStates = {};
 const controllerSockets = new Set();
-const playerSockets = new Set();
+const playerSockets = new Set(); // Define playerSockets to store player connections
+let gameStarted = false; // Track the game state
 
 const playerColors = [
   '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#800000', '#808000', '#008000', '#800080', '#008080', '#000080'
@@ -24,9 +25,12 @@ const playerColors = [
 app.use(express.static('.'));
 
 webSocketServer.on('connection', (socket, req) => {
-  if (req.url === '/controller') {
+  const isController = req.url === '/controller';
+  let playerId = null;
+
+  if (isController) {
     controllerSockets.add(socket);
-    socket.send(JSON.stringify(['player-count', playerCount, readyCount]));
+    socket.send(JSON.stringify(['player-states', playerStates]));
 
     socket.on('close', () => {
       controllerSockets.delete(socket);
@@ -39,7 +43,12 @@ webSocketServer.on('connection', (socket, req) => {
           console.log('Message received from controller:', message);
           switch (message[0]) {
             case 'start-game':
-              broadcastToPlayers(['start-game']);
+              if (canStartGame()) {
+                gameStarted = true;
+                broadcastToPlayers(['start-game']);
+              } else {
+                socket.send(JSON.stringify(['error', 'Cannot start game. Ensure all players are ready and at least one player is connected.']));
+              }
               break;
             default:
               break;
@@ -52,26 +61,36 @@ webSocketServer.on('connection', (socket, req) => {
       }
     });
   } else {
-    playerSockets.add(socket);
-    playerCount++;
-    const assignedColor = playerColors[playerCount % playerColors.length];
-    broadcastToControllers(['player-count', playerCount, readyCount]);
-
-    socket.send(JSON.stringify(['player-index', playerCount - 1, assignedColor]));
-
+    playerSockets.add(socket); // Add the player socket to the set
     socket.on('message', (data) => {
       if (data.length > 0) {
         try {
           const message = JSON.parse(data);
           console.log('Message received from player:', message);
           switch (message[0]) {
+            case 'player-connect':
+              playerId = message[1] || uuidv4();
+              if (!playerStates[playerId]) {
+                const assignedColor = playerColors[Object.keys(playerStates).length % playerColors.length];
+                playerStates[playerId] = { ready: false, color: assignedColor };
+              }
+              socket.send(JSON.stringify(['player-index', playerId, playerStates[playerId].color]));
+              if (gameStarted) {
+                socket.send(JSON.stringify(['start-game']));
+              }
+              broadcastToControllers(['player-states', playerStates]);
+              break;
             case 'player-ready':
-              readyCount++;
-              broadcastToControllers(['player-ready', playerCount - 1, assignedColor]);
-              broadcastToControllers(['player-count', playerCount, readyCount]);
+              if (playerStates[playerId]) {
+                playerStates[playerId].ready = true;
+                broadcastToControllers(['player-ready', playerId, playerStates[playerId].color]);
+                broadcastToControllers(['player-states', playerStates]);
+                if (gameStarted) {
+                  socket.send(JSON.stringify(['start-game']));
+                }
+              }
               break;
             case 'draw-point':
-              console.log('Forwarding draw-point message to controllers:', message);
               broadcastToControllers(['draw-point', message[1], message[2], message[3]]);
               break;
             default:
@@ -84,9 +103,11 @@ webSocketServer.on('connection', (socket, req) => {
     });
 
     socket.on('close', () => {
-      playerSockets.delete(socket);
-      playerCount--;
-      broadcastToControllers(['player-count', playerCount, readyCount]);
+      playerSockets.delete(socket); // Remove the player socket from the set
+      if (playerId && playerStates[playerId]) {
+        playerStates[playerId].ready = false;
+        broadcastToControllers(['player-states', playerStates]);
+      }
     });
   }
 });
@@ -105,6 +126,13 @@ function broadcastToPlayers(message) {
   for (const playerSocket of playerSockets) {
     playerSocket.send(str);
   }
+}
+
+function canStartGame() {
+  const playerIds = Object.keys(playerStates);
+  const allReady = playerIds.length > 0 && playerIds.every(playerId => playerStates[playerId].ready);
+  const anyReady = playerIds.some(playerId => playerStates[playerId].ready);
+  return allReady && anyReady;
 }
 
 const port = config['server-port'] || 3000;
