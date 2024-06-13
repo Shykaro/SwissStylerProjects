@@ -48,6 +48,9 @@ socket.addEventListener('message', (event) => {
         case 'player-states':
           updatePlayerStates(data[1]);
           break;
+        case 'player-disconnected':
+          removePlayerBox(data[1]);
+          break;
         case 'error':
           showError(data[1]);
           break;
@@ -115,6 +118,18 @@ function updatePlayerStates(states) {
 
   const canStart = Object.values(states).length > 0 && Object.values(states).every(player => player.ready);
   startGameButton.disabled = !canStart;
+}
+
+function removePlayerBox(playerId) {
+  const boxIndex = playerId;
+  const box = playerBoxes[boxIndex];
+  if (box) {
+    box.remove();
+    delete playerBoxes[boxIndex];
+  }
+
+  const playerCount = Object.keys(playerBoxes).length;
+  playerCountElem.innerHTML = playerCount;
 }
 
 function showError(message) {

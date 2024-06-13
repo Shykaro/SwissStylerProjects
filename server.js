@@ -115,9 +115,11 @@ webSocketServer.on('connection', (socket, req) => {
     });
 
     socket.on('close', () => {
+      const disconnectedPlayerId = playerSockets.get(socket);
       playerSockets.delete(socket);
-      if (playerId && playerStates[playerId]) {
-        delete playerStates[playerId];
+      if (disconnectedPlayerId && playerStates[disconnectedPlayerId]) {
+        delete playerStates[disconnectedPlayerId];
+        broadcastToControllers(['player-disconnected', disconnectedPlayerId]);
         broadcastToControllers(['player-states', playerStates]);
         broadcastToControllers(['player-count', Object.keys(playerStates).length, playerStates]); // Spieleranzahl senden
       }
