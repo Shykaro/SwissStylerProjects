@@ -1,0 +1,44 @@
+{
+  "allPlayerFrames": [
+    [
+      "/GIFs/Blue_back_0.png",
+      "/GIFs/Blue_back_1.png",
+      "/GIFs/Blue_back_2.png",
+      "/GIFs/Blue_back_3.png",
+      "/GIFs/Blue_back_4.png",
+      "/GIFs/Blue_back_0.png"
+    ],
+    [
+      "/GIFs/Green_back_0.png",
+      "/GIFs/Green_back_1.png",
+      "/GIFs/Green_back_2.png",
+      "/GIFs/Green_back_3.png",
+      "/GIFs/Green_back_4.png",
+      "/GIFs/Green_back_0.png"
+    ],
+    [
+      "/GIFs/Orange_back_0.png",
+      "/GIFs/Orange_back_1.png",
+      "/GIFs/Orange_back_2.png",
+      "/GIFs/Orange_back_3.png",
+      "/GIFs/Orange_back_4.png",
+      "/GIFs/Orange_back_0.png"
+    ],
+    [
+      "/GIFs/Pink_back_0.png",
+      "/GIFs/Pink_back_1.png",
+      "/GIFs/Pink_back_2.png",
+      "/GIFs/Pink_back_3.png",
+      "/GIFs/Pink_back_4.png",
+      "/GIFs/Pink_back_0.png"
+    ],
+    [
+      "/GIFs/Yellow_back_0.png",
+      "/GIFs/Yellow_back_1.png",
+      "/GIFs/Yellow_back_2.png",
+      "/GIFs/Yellow_back_3.png",
+      "/GIFs/Yellow_back_4.png",
+      "/GIFs/Yellow_back_0.png"
+    ]
+  ]
+}
