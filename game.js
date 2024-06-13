@@ -10,9 +10,6 @@ socket.addEventListener('open', () => {
 socket.addEventListener('message', (event) => {
   const data = JSON.parse(event.data);
   switch (data[0]) {
-    case 'draw-point':
-      handlePlayerInput(data[1], data[2], data[3]);
-      break;
     case 'start-game':
       playerCount = data[1]; // Anzahl der Spieler erhalten
       generateCanvases(playerCount);
@@ -25,15 +22,12 @@ socket.addEventListener('message', (event) => {
   }
 });
 
-function handlePlayerInput(x, y, color) {
-  moveBallToTopRightByTouch(x, y, color);
-}
-
 function handlePlayerAction(playerIndex) {
   moveBallToTopRight(playerIndex);
 }
 
 function generateCanvases(numCanvases) {
+  console.log(`Generating ${numCanvases} canvases`);
   let container = document.getElementById('canvasContainer');
   container.innerHTML = ''; // Vorherige Canvas-Felder löschen
 
