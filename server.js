@@ -51,6 +51,9 @@ webSocketServer.on('connection', (socket, req) => {
                 socket.send(JSON.stringify(['error', 'Cannot start game. Ensure all players are ready and at least one player is connected.']));
               }
               break;
+            case 'request-player-count':
+              socket.send(JSON.stringify(['player-count', Object.keys(playerStates).length, playerStates]));
+              break;
             default:
               break;
           }
@@ -81,12 +84,14 @@ webSocketServer.on('connection', (socket, req) => {
                 socket.send(JSON.stringify(['start-game']));
               }
               broadcastToControllers(['player-states', playerStates]);
+              broadcastToControllers(['player-count', Object.keys(playerStates).length, playerStates]); // Spieleranzahl senden
               break;
             case 'player-ready':
               if (playerStates[playerId]) {
                 playerStates[playerId].ready = true;
                 broadcastToControllers(['player-ready', playerId, playerStates[playerId].color]);
                 broadcastToControllers(['player-states', playerStates]);
+                broadcastToControllers(['player-count', Object.keys(playerStates).length, playerStates]); // Spieleranzahl senden
                 if (gameStarted) {
                   socket.send(JSON.stringify(['start-game']));
                 }
@@ -95,6 +100,7 @@ webSocketServer.on('connection', (socket, req) => {
             case 'player-action':
               const playerIndex = parseInt(message[1], 10);
               if (!isNaN(playerIndex)) {
+                console.log(`Forwarding player action for player ${playerIndex - 1}`);
                 broadcastToControllers(['player-action', playerIndex - 1]);
               } else {
                 console.error('Invalid playerIndex received:', message[1]);
@@ -110,10 +116,13 @@ webSocketServer.on('connection', (socket, req) => {
     });
 
     socket.on('close', () => {
+      const disconnectedPlayerId = playerSockets.get(socket);
       playerSockets.delete(socket);
-      if (playerId && playerStates[playerId]) {
-        playerStates[playerId].ready = false;
+      if (disconnectedPlayerId && playerStates[disconnectedPlayerId]) {
+        delete playerStates[disconnectedPlayerId];
+        broadcastToControllers(['player-disconnected', disconnectedPlayerId]);
         broadcastToControllers(['player-states', playerStates]);
+        broadcastToControllers(['player-count', Object.keys(playerStates).length, playerStates]); // Spieleranzahl senden
       }
     });
   }

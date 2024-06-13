@@ -42,7 +42,7 @@ socket.addEventListener('open', () => {
     generateCanvases(playerCount); // Canvases basierend auf der gespeicherten Spieleranzahl generieren
   }
 });
-
+console.log(socket);
 socket.addEventListener('message', (event) => {
   const data = JSON.parse(event.data);
   console.log('Message received in game.js:', data);  // Debug-Log hinzugefügt
@@ -54,7 +54,7 @@ socket.addEventListener('message', (event) => {
       break;
     case 'player-action':
       console.log(`Player action received for player index ${data[1]}`);  // Debug-Log hinzugefügt
-      handlePlayerAction(data[1]); // Spieleraktionen (z.B. Drücken auf dem Handy)
+      handlePlayerAction(data[1] - 1); // Spieleraktionen (z.B. Drücken auf dem Handy)
       break;
     default:
       console.error(`Unknown message type: ${data[0]}`);
@@ -135,9 +135,9 @@ function drawCircle() {
     const areaY = canvas.height * 2 / 3;
     const areaWidth = canvas.width;
     const areaHeight = canvas.height / 3;
-    context.fillStyle = 'red';
+    context.fillStyle = 'transparent';
     context.fillRect(areaX, areaY, areaWidth, areaHeight);
-    context.strokeStyle = 'red';
+    context.strokeStyle = 'transparent';
     context.strokeRect(areaX, areaY, areaWidth, areaHeight);
 
     // Bild im roten Bereich zeichnen
@@ -258,27 +258,61 @@ function isBallInRedArea(ball) {
   return ball.y > areaY && ball.y < areaY + areaHeight;
 }
 
-function playGifOnce(image) {
-  if (image) {
-    let tempImage = new Image();
-    tempImage.src = image.src;
-    image.src = '';
+let allPlayerFrames = []
 
-    topLeftImagePaths.forEach((el, index) => {
+
+function loadFrames() {
+  fetch('playerFrames.json')
+  .then(response => response.json())
+  .then(data => {
+    allPlayerFrames = data.allPlayerFrames; // Speichern der Daten in der globalen Variable
+    allPlayerFrames.forEach(frames => preloadImages(frames));
+  })
+  .catch(error => console.error('Error loading frames:', error));
+}
+
+window.onload = loadFrames;
+
+allPlayerFrames.forEach(frames => preloadImages(frames));
+function preloadImages(frames) {
+  frames.forEach(src => {
+    const img = new Image();
+    img.src = src;
+  });
+}
+
+function playGifOnce(image, index) {
+  if (image) {
+    // Preload all images for the given index
+    preloadImages(allPlayerFrames[index]);
+
+    // Set the first frame immediately
+    image.src = allPlayerFrames[index][0];
+
+    // Loop through all frames and set a timeout for each frame with an increasing delay
+    for (let i = 1; i < allPlayerFrames[index].length; i++) {
       setTimeout(() => {
-        image.src = el;
-      }, 58 * index);
-    });
+        image.src = allPlayerFrames[index][i];
+      }, 30 * i);
+    }
   }
 }
 
+// Beispiel-Aufruf zum Preloaden aller Bilder beim Start
+let ballClicked = false
 window.addEventListener('keydown', (event) => {
-  const key = event.key;
-  if (key >= '1' && key <= '5') {
-    const index = parseInt(key) - 1;
-    if (index < canvases.length) {
-      moveBallToTopRight(index);
-      playGifOnce(redAreaImages[index]);
+  if (!ballClicked) { 
+    const key = event.key;
+    if (key >= '1' && key <= '5') {
+      const index = parseInt(key) - 1;
+      if (index < canvases.length) {
+        ballClicked = true
+        moveBallToTopRight(index);
+        playGifOnce(redAreaImages[index], index);
+        setTimeout(() => {
+          ballClicked = false
+        }, 800);
+      }
     }
   }
 });

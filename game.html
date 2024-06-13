@@ -6,6 +6,11 @@
     <title>Bewegende Kreise</title>
     <link rel="stylesheet" href="game_style.css">
     <script src="https://cdn.jsdelivr.net/npm/gifler@0.1.0/gifler.min.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lilita+One&display=swap" rel="stylesheet">
+    
 </head>
 <body>
     <div>
@@ -13,7 +18,7 @@
         <input type="number" id="numCanvases" value="5" min="1">
         <button id="generateButton">Generieren</button> <!-- ID hinzugefügt -->
     </div>
-    <div id="score">Punkte: 0</div> <!-- Punktanzeige -->
+    <div id="score" class="sweet-title lilita-one-regular">Punkte: 0</div> <!-- Punktanzeige -->
     <div id="canvasContainer" class="canvas-container"></div>
     <script type="module" src="game.js"></script>
 </body>

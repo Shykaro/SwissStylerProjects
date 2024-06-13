@@ -9,6 +9,7 @@ const errorMessageElem = document.getElementById('error-message');
 const playerBoxes = {};
 let playerCount = 0;
 
+console.log('Connecting to WebSocket server at:', `${config['websocket-url']}controller`);
 const socket = new WebSocket(`${config['websocket-url']}controller`);
 
 socket.addEventListener('open', () => {
@@ -18,6 +19,15 @@ socket.addEventListener('open', () => {
       socket.send('');
     }
   }, 10000);
+  socket.send(JSON.stringify(['request-player-count'])); // Spieleranzahl anfordern
+});
+
+socket.addEventListener('error', (error) => {
+  console.error('WebSocket error:', error);
+});
+
+socket.addEventListener('close', (event) => {
+  console.error('WebSocket connection closed:', event);
 });
 
 socket.addEventListener('message', (event) => {
@@ -27,14 +37,19 @@ socket.addEventListener('message', (event) => {
       console.log('Message received from server:', data);
       switch (data[0]) {
         case 'player-count':
+          console.log('Current playercount (before data[1]): ', playerCount);
           playerCount = data[1];
-          updatePlayerCount(data[1], data[2]);
+          localStorage.setItem('playerCount', playerCount); // Spieleranzahl im localStorage speichern
+          updatePlayerStates(data[2]); // Aktualisieren Sie den Zustand der Spieler
           break;
         case 'player-ready':
-          updatePlayerReady(data[1], data[2]);
+          updatePlayerStates(data[1]);
           break;
         case 'player-states':
           updatePlayerStates(data[1]);
+          break;
+        case 'player-disconnected':
+          removePlayerBox(data[1]);
           break;
         case 'error':
           showError(data[1]);
@@ -43,47 +58,20 @@ socket.addEventListener('message', (event) => {
           console.error(`Unknown message type: ${data[0]}`);
       }
     } catch (error) {
-      console.error('Error parsing message:', error);
+      console.error('Error parsing message from server:', error);
     }
   }
 });
 
 startGameButton.addEventListener('click', () => {
-  console.log('Start game button clicked'); // Debug-Log hinzugefügt
-  socket.send(JSON.stringify(['start-game', playerCount])); // Spieleranzahl senden
-  localStorage.setItem('playerCount', playerCount); // Spieleranzahl im localStorage speichern
+  console.log('Start game button clicked');
+  socket.send(JSON.stringify(['start-game', playerCount]));
+  localStorage.setItem('playerCount', playerCount);
+  console.log(`Stored player count in localStorage: ${playerCount}`);
   setTimeout(() => {
     window.location.href = 'game.html';
-  }, 100); // 100ms Verzögerung einfügen, um sicherzustellen, dass die Nachricht gesendet wird
+  }, 100);
 });
-
-function updatePlayerCount(playerCount, readyCount) {
-  playerCountElem.innerHTML = playerCount;
-  readyCountElem.innerHTML = readyCount;
-
-  for (let i = 0; i < playerCount; i++) {
-    if (!playerBoxes[i]) {
-      const box = document.createElement('div');
-      box.classList.add('player-box');
-      box.setAttribute('data-index', i);
-      playerReadyContainer.appendChild(box);
-      playerBoxes[i] = box;
-      console.log(`Created box for player ${i}`);
-    }
-  }
-}
-
-function updatePlayerReady(index, color) {
-  const box = playerBoxes[index];
-  if (box) {
-    console.log(`Player box before update: ${box.style.backgroundColor}`);
-    //box.style.backgroundColor = color;
-    //box.style.bord = color;
-    console.log(`Player box after update: ${box.style.backgroundColor}`);
-  } else {
-    console.log(`Player box for index ${index} not found`);
-  }
-}
 
 function updatePlayerStates(states) {
   const playerCount = Object.keys(states).length;
@@ -92,6 +80,7 @@ function updatePlayerStates(states) {
   playerCountElem.innerHTML = playerCount;
   readyCountElem.innerHTML = readyCount;
 
+  // Aktualisieren Sie die Spielerboxen basierend auf dem aktuellen Status
   for (const [index, state] of Object.entries(states)) {
     const boxIndex = parseInt(index, 10);
     if (!playerBoxes[boxIndex]) {
@@ -103,41 +92,44 @@ function updatePlayerStates(states) {
       playerBoxes[boxIndex] = box;
     }
 
-
-    // Only update the box color if the player is ready
     if (state.ready) {
       playerBoxes[boxIndex].style.backgroundColor = state.color;
-      console.log(`Player ${boxIndex} box updated to color ${state.color}`);
       playerBoxes[boxIndex].style.borderColor = state.color;
-      playerBoxes[boxIndex].style.borderWidth = '2px'; // Ensure the border is visible
-      playerBoxes[boxIndex].style.borderStyle = 'solid'; // Define border style if not already set
-      console.log(`Player ${boxIndex} box border updated to color ${state.color}`);
+      playerBoxes[boxIndex].style.borderWidth = '2px';
+      playerBoxes[boxIndex].style.borderStyle = 'solid';
 
-      // Create an img element
       const img = document.createElement('img');
-      img.src = 'Player.png'; // Set the source of the image
-      img.alt = 'Player Image'; // Alternative text for the image
-      img.style.width = '100%'; // Set the image to take up the full width of the box
-      img.style.height = '100%'; // Set the image to take up the full height of the box
+      img.src = 'Player.png';
+      img.alt = 'Player Image';
+      img.style.width = '100%';
+      img.style.height = '100%';
 
-      // Remove any existing image before adding the new one
       const existingImg = playerBoxes[boxIndex].querySelector('img');
       if (existingImg) {
         playerBoxes[boxIndex].removeChild(existingImg);
       }
 
-      // Append the new image to the box
       playerBoxes[boxIndex].appendChild(img);
-      console.log(`Player ${boxIndex} box image updated with ${state.imgUrl}`);
     } else {
-      playerBoxes[boxIndex].style.borderColor = 'white'; // Or any default border color
+      playerBoxes[boxIndex].style.backgroundColor = 'transparent';
+      playerBoxes[boxIndex].style.borderColor = 'white';
     }
-
-
   }
 
   const canStart = Object.values(states).length > 0 && Object.values(states).every(player => player.ready);
   startGameButton.disabled = !canStart;
+}
+
+function removePlayerBox(playerId) {
+  const boxIndex = playerId;
+  const box = playerBoxes[boxIndex];
+  if (box) {
+    box.remove();
+    delete playerBoxes[boxIndex];
+  }
+
+  const playerCount = Object.keys(playerBoxes).length;
+  playerCountElem.innerHTML = playerCount;
 }
 
 function showError(message) {
