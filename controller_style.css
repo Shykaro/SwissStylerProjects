@@ -53,7 +53,7 @@ html {
   
   .sweet-title {
     order: 2;
-    transform: skew(0, -10deg);
+    transform: skew(0, -1deg);
     color: #fde9ff;
     font-weight: 900;
     text-transform: uppercase;
