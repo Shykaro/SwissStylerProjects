@@ -77,7 +77,8 @@ function updatePlayerReady(index, color) {
   const box = playerBoxes[index];
   if (box) {
     console.log(`Player box before update: ${box.style.backgroundColor}`);
-    box.style.backgroundColor = color;
+    //box.style.backgroundColor = color;
+    //box.style.bord = color;
     console.log(`Player box after update: ${box.style.backgroundColor}`);
   } else {
     console.log(`Player box for index ${index} not found`);
@@ -103,13 +104,38 @@ function updatePlayerStates(states) {
       playerBoxes[boxIndex] = box;
       console.log(`Created box for player ${boxIndex}`);
     }
+
+
     // Only update the box color if the player is ready
     if (state.ready) {
       playerBoxes[boxIndex].style.backgroundColor = state.color;
       console.log(`Player ${boxIndex} box updated to color ${state.color}`);
+      playerBoxes[boxIndex].style.borderColor = state.color;
+      playerBoxes[boxIndex].style.borderWidth = '2px'; // Ensure the border is visible
+      playerBoxes[boxIndex].style.borderStyle = 'solid'; // Define border style if not already set
+      console.log(`Player ${boxIndex} box border updated to color ${state.color}`);
+
+      // Create an img element
+      const img = document.createElement('img');
+      img.src = 'Player.png'; // Set the source of the image
+      img.alt = 'Player Image'; // Alternative text for the image
+      img.style.width = '100%'; // Set the image to take up the full width of the box
+      img.style.height = '100%'; // Set the image to take up the full height of the box
+
+      // Remove any existing image before adding the new one
+      const existingImg = playerBoxes[boxIndex].querySelector('img');
+      if (existingImg) {
+        playerBoxes[boxIndex].removeChild(existingImg);
+      }
+
+      // Append the new image to the box
+      playerBoxes[boxIndex].appendChild(img);
+      console.log(`Player ${boxIndex} box image updated with ${state.imgUrl}`);
     } else {
-      playerBoxes[boxIndex].style.backgroundColor = 'transparent'; // Or any default color
+      playerBoxes[boxIndex].style.borderColor = 'white'; // Or any default border color
     }
+
+
   }
 
   // Enable or disable the start game button based on the player states
