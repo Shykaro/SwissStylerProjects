@@ -42,7 +42,7 @@ socket.addEventListener('open', () => {
     generateCanvases(playerCount); // Canvases basierend auf der gespeicherten Spieleranzahl generieren
   }
 });
-
+console.log(socket);
 socket.addEventListener('message', (event) => {
   const data = JSON.parse(event.data);
   console.log('Message received in game.js:', data);  // Debug-Log hinzugefügt
@@ -299,16 +299,20 @@ function playGifOnce(image, index) {
 }
 
 // Beispiel-Aufruf zum Preloaden aller Bilder beim Start
-
+let ballClicked = false
 window.addEventListener('keydown', (event) => {
-  const key = event.key;
-  if (key >= '1' && key <= '5') {
-    const index = parseInt(key) - 1;
-    if (index < canvases.length) {
-      moveBallToTopRight(index);
-
-
-      playGifOnce(redAreaImages[index], index);
+  if (!ballClicked) { 
+    const key = event.key;
+    if (key >= '1' && key <= '5') {
+      const index = parseInt(key) - 1;
+      if (index < canvases.length) {
+        ballClicked = true
+        moveBallToTopRight(index);
+        playGifOnce(redAreaImages[index], index);
+        setTimeout(() => {
+          ballClicked = false
+        }, 800);
+      }
     }
   }
 });
