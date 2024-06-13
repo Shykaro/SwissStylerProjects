@@ -50,6 +50,7 @@ socket.addEventListener('message', (event) => {
     case 'start-game':
       playerCount = data[1]; // Anzahl der Spieler erhalten
       console.log(`Starting game with ${playerCount} players`);  // Debug-Log hinzugefügt
+      localStorage.setItem('playerCount', playerCount); // Spieleranzahl im localStorage speichern
       generateCanvases(playerCount);
       break;
     case 'player-action':
@@ -284,7 +285,7 @@ window.addEventListener('keydown', (event) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  if (playerCount) {
+  if (playerCount > 0) {
     console.log(`Generating canvases on page load for ${playerCount} players`); // Debug-Log hinzugefügt
     generateCanvases(playerCount);
   } else {

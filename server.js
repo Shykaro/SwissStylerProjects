@@ -51,6 +51,9 @@ webSocketServer.on('connection', (socket, req) => {
                 socket.send(JSON.stringify(['error', 'Cannot start game. Ensure all players are ready and at least one player is connected.']));
               }
               break;
+            case 'request-player-count':
+              socket.send(JSON.stringify(['player-count', Object.keys(playerStates).length, playerStates]));
+              break;
             default:
               break;
           }
@@ -81,12 +84,14 @@ webSocketServer.on('connection', (socket, req) => {
                 socket.send(JSON.stringify(['start-game']));
               }
               broadcastToControllers(['player-states', playerStates]);
+              broadcastToControllers(['player-count', Object.keys(playerStates).length, playerStates]); // Spieleranzahl senden
               break;
             case 'player-ready':
               if (playerStates[playerId]) {
                 playerStates[playerId].ready = true;
                 broadcastToControllers(['player-ready', playerId, playerStates[playerId].color]);
                 broadcastToControllers(['player-states', playerStates]);
+                broadcastToControllers(['player-count', Object.keys(playerStates).length, playerStates]); // Spieleranzahl senden
                 if (gameStarted) {
                   socket.send(JSON.stringify(['start-game']));
                 }
@@ -112,8 +117,9 @@ webSocketServer.on('connection', (socket, req) => {
     socket.on('close', () => {
       playerSockets.delete(socket);
       if (playerId && playerStates[playerId]) {
-        playerStates[playerId].ready = false;
+        delete playerStates[playerId];
         broadcastToControllers(['player-states', playerStates]);
+        broadcastToControllers(['player-count', Object.keys(playerStates).length, playerStates]); // Spieleranzahl senden
       }
     });
   }
