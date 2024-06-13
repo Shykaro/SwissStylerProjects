@@ -46,22 +46,25 @@ function initializeBalls() {
     let topLeftImages = [];
     let topRightImages = [];
 
-    // Bilder laden
+    // Bilder laden und IDs zuweisen
     redAreaImagePaths.forEach((path, index) => {
         let img = new Image();
         img.src = path;
+        img.id = `redAreaImage${index}`; // ID zuweisen
         redAreaImages[index] = img;
     });
 
     topLeftImagePaths.forEach((path, index) => {
         let img = new Image();
         img.src = path;
+        img.id = `topLeftImage${index}`; // ID zuweisen
         topLeftImages[index] = img;
     });
 
     topRightImagePaths.forEach((path, index) => {
         let img = new Image();
         img.src = path;
+        img.id = `topRightImage${index}`; // ID zuweisen
         topRightImages[index] = img;
     });
 
