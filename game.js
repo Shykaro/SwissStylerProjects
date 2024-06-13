@@ -1,20 +1,27 @@
 import config from './config.js';
 
 const socket = new WebSocket(config['websocket-url']);
-let playerCount = 0;
+let playerCount = localStorage.getItem('playerCount'); // Spieleranzahl aus dem localStorage lesen
 
 socket.addEventListener('open', () => {
   console.log('WebSocket connection opened in game.js');
+  if (playerCount) {
+    console.log(`Starting game with ${playerCount} players`);  // Debug-Log hinzugefügt
+    generateCanvases(playerCount); // Canvases basierend auf der gespeicherten Spieleranzahl generieren
+  }
 });
 
 socket.addEventListener('message', (event) => {
   const data = JSON.parse(event.data);
+  console.log('Message received in game.js:', data);  // Debug-Log hinzugefügt
   switch (data[0]) {
     case 'start-game':
       playerCount = data[1]; // Anzahl der Spieler erhalten
+      console.log(`Starting game with ${playerCount} players`);  // Debug-Log hinzugefügt
       generateCanvases(playerCount);
       break;
     case 'player-action':
+      console.log(`Player action received for player index ${data[1]}`);  // Debug-Log hinzugefügt
       handlePlayerAction(data[1]); // Spieleraktionen (z.B. Drücken auf dem Handy)
       break;
     default:
@@ -23,11 +30,12 @@ socket.addEventListener('message', (event) => {
 });
 
 function handlePlayerAction(playerIndex) {
+  console.log(`Handling action for player ${playerIndex}`);  // Debug-Log hinzugefügt
   moveBallToTopRight(playerIndex);
 }
 
 function generateCanvases(numCanvases) {
-  console.log(`Generating ${numCanvases} canvases`);
+  console.log(`Generating ${numCanvases} canvases`);  // Debug-Log hinzugefügt
   let container = document.getElementById('canvasContainer');
   container.innerHTML = ''; // Vorherige Canvas-Felder löschen
 
@@ -173,8 +181,3 @@ function initializeBalls() {
   resetGame();
   drawCircle();
 }
-
-document.getElementById('generateButton').addEventListener('click', () => {
-  const numCanvases = document.getElementById('numCanvases').value;
-  generateCanvases(numCanvases);
-});

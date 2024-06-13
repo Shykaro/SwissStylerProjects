@@ -5,8 +5,6 @@ const readyCountElem = document.getElementById('ready-count');
 const startGameButton = document.getElementById('start-game-button');
 const playerReadyContainer = document.getElementById('player-ready-container');
 const errorMessageElem = document.getElementById('error-message');
-const canvas = document.getElementById('controller-canvas');
-const context = canvas.getContext('2d');
 
 const playerBoxes = {};
 let playerCount = 0;
@@ -51,8 +49,12 @@ socket.addEventListener('message', (event) => {
 });
 
 startGameButton.addEventListener('click', () => {
+  console.log('Start game button clicked'); // Debug-Log hinzugefügt
   socket.send(JSON.stringify(['start-game', playerCount])); // Spieleranzahl senden
-  window.location.href = 'game.html';
+  localStorage.setItem('playerCount', playerCount); // Spieleranzahl im localStorage speichern
+  setTimeout(() => {
+    window.location.href = 'game.html';
+  }, 100); // 100ms Verzögerung einfügen, um sicherzustellen, dass die Nachricht gesendet wird
 });
 
 function updatePlayerCount(playerCount, readyCount) {
