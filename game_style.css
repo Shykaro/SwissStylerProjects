@@ -1,0 +1,18 @@
+* {
+    background-color: lightblue;
+}
+
+.canvas-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: nowrap;
+    height: 100vh;
+}
+
+canvas {
+    display: block;
+    height: 90vh;
+    width: 18vw;
+    margin: 0px;
+    background-color: black;
+}
