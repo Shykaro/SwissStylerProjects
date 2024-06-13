@@ -224,7 +224,7 @@ html {
     z-index: 10;
     padding: 0.75em 1.5em; /* Größeres Padding für besseren Look */
     background-color: #007bff; /* Hauptfarbe */
-    background-image: linear-gradient(to right, #007bff, #0056b3); /* Verläufe hinzufügen */
+    background-image: linear-gradient(to right, #60f0cc, #60f0cc); /* Verläufe hinzufügen */
     color: white;
     border: none;
     border-radius: 0.5em; /* Mehr abgerundete Ecken */
@@ -232,7 +232,7 @@ html {
     font-size: 1.2em; /* Größere Schrift */
     margin: 1em 0;
     transition: background-color 0.3s ease, transform 0.3s ease; /* Sanfte Übergänge */
-    -webkit-box-shadow: 0px 0px 64px 0px rgba(96,240,204,1);
+    -webkit-box-shadow: 0px 0px 64px 0px #60f0cc;
     -moz-box-shadow: 0px 0px 64px 0px rgba(96,240,204,1);
     box-shadow: 0px 0px 64px 0px rgba(96,240,204,1);
   }
