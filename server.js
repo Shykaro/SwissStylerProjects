@@ -1,7 +1,6 @@
 import express from 'express';
 import http from 'http';
 import { createRequire } from 'module';
-import { v4 as uuidv4 } from 'uuid'; // Correct import for 'uuid'
 import config from './config.js';
 
 const require = createRequire(import.meta.url);
@@ -15,8 +14,9 @@ const webSocketServer = new WebSocketServer({ server: httpServer });
 
 const playerStates = {};
 const controllerSockets = new Set();
-const playerSockets = new Set(); // Define playerSockets to store player connections
-let gameStarted = false; // Track the game state
+const playerSockets = new Map();
+let gameStarted = false;
+let nextPlayerId = 1;
 
 const playerColors = [
   '#fb0c0c', '#fed034', '#4043ff', '#ff40fa', '#40ff57', '#fe8021'
@@ -24,6 +24,7 @@ const playerColors = [
 
 app.use(express.static('.'));
 
+// WebSocket connection handling
 webSocketServer.on('connection', (socket, req) => {
   const isController = req.url === '/controller';
   let playerId = null;
@@ -45,7 +46,7 @@ webSocketServer.on('connection', (socket, req) => {
             case 'start-game':
               if (canStartGame()) {
                 gameStarted = true;
-                broadcastToPlayers(['start-game']);
+                broadcastToPlayers(['start-game', Object.keys(playerStates).length]);
               } else {
                 socket.send(JSON.stringify(['error', 'Cannot start game. Ensure all players are ready and at least one player is connected.']));
               }
@@ -57,11 +58,11 @@ webSocketServer.on('connection', (socket, req) => {
           console.error('Error parsing message from controller:', error);
         }
       } else {
-        socket.send(''); // ping response
+        socket.send('');
       }
     });
   } else {
-    playerSockets.add(socket); // Add the player socket to the set
+    playerSockets.set(socket, playerId);
     socket.on('message', (data) => {
       if (data.length > 0) {
         try {
@@ -69,7 +70,8 @@ webSocketServer.on('connection', (socket, req) => {
           console.log('Message received from player:', message);
           switch (message[0]) {
             case 'player-connect':
-              playerId = message[1] || uuidv4();
+              playerId = nextPlayerId++;
+              playerSockets.set(socket, playerId);
               if (!playerStates[playerId]) {
                 const assignedColor = playerColors[Object.keys(playerStates).length % playerColors.length];
                 playerStates[playerId] = { ready: false, color: assignedColor };
@@ -90,8 +92,13 @@ webSocketServer.on('connection', (socket, req) => {
                 }
               }
               break;
-            case 'draw-point':
-              broadcastToControllers(['draw-point', message[1], message[2], message[3]]);
+            case 'player-action':
+              const playerIndex = parseInt(message[1], 10);
+              if (!isNaN(playerIndex)) {
+                broadcastToControllers(['player-action', playerIndex - 1]);
+              } else {
+                console.error('Invalid playerIndex received:', message[1]);
+              }
               break;
             default:
               break;
@@ -103,7 +110,7 @@ webSocketServer.on('connection', (socket, req) => {
     });
 
     socket.on('close', () => {
-      playerSockets.delete(socket); // Remove the player socket from the set
+      playerSockets.delete(socket);
       if (playerId && playerStates[playerId]) {
         playerStates[playerId].ready = false;
         broadcastToControllers(['player-states', playerStates]);
@@ -123,7 +130,7 @@ function broadcastToControllers(message) {
 function broadcastToPlayers(message) {
   const str = JSON.stringify(message);
   console.log('Broadcasting to players:', str);
-  for (const playerSocket of playerSockets) {
+  for (const playerSocket of playerSockets.keys()) {
     playerSocket.send(str);
   }
 }

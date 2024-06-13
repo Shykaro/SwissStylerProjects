@@ -5,12 +5,11 @@ const readyCountElem = document.getElementById('ready-count');
 const startGameButton = document.getElementById('start-game-button');
 const playerReadyContainer = document.getElementById('player-ready-container');
 const errorMessageElem = document.getElementById('error-message');
-const canvas = document.getElementById('controller-canvas');
-const context = canvas.getContext('2d');
-
-const socket = new WebSocket(`${config['websocket-url']}controller`);
 
 const playerBoxes = {};
+let playerCount = 0;
+
+const socket = new WebSocket(`${config['websocket-url']}controller`);
 
 socket.addEventListener('open', () => {
   console.log('WebSocket connection opened');
@@ -28,10 +27,8 @@ socket.addEventListener('message', (event) => {
       console.log('Message received from server:', data);
       switch (data[0]) {
         case 'player-count':
+          playerCount = data[1];
           updatePlayerCount(data[1], data[2]);
-          break;
-        case 'draw-point':
-          changeBackgroundColor(data[3]);
           break;
         case 'player-ready':
           updatePlayerReady(data[1], data[2]);
@@ -52,14 +49,18 @@ socket.addEventListener('message', (event) => {
 });
 
 startGameButton.addEventListener('click', () => {
-  socket.send(JSON.stringify(['start-game']));
+  console.log('Start game button clicked'); // Debug-Log hinzugefügt
+  socket.send(JSON.stringify(['start-game', playerCount])); // Spieleranzahl senden
+  localStorage.setItem('playerCount', playerCount); // Spieleranzahl im localStorage speichern
+  setTimeout(() => {
+    window.location.href = 'game.html';
+  }, 100); // 100ms Verzögerung einfügen, um sicherzustellen, dass die Nachricht gesendet wird
 });
 
 function updatePlayerCount(playerCount, readyCount) {
   playerCountElem.innerHTML = playerCount;
   readyCountElem.innerHTML = readyCount;
 
-  // Add new player boxes if necessary
   for (let i = 0; i < playerCount; i++) {
     if (!playerBoxes[i]) {
       const box = document.createElement('div');
@@ -73,7 +74,6 @@ function updatePlayerCount(playerCount, readyCount) {
 }
 
 function updatePlayerReady(index, color) {
-  console.log(`Updating player ${index} box with color ${color}`);
   const box = playerBoxes[index];
   if (box) {
     console.log(`Player box before update: ${box.style.backgroundColor}`);
@@ -86,7 +86,6 @@ function updatePlayerReady(index, color) {
 }
 
 function updatePlayerStates(states) {
-  console.log('Updating player states:', states);
   const playerCount = Object.keys(states).length;
   const readyCount = Object.values(states).filter(player => player.ready).length;
 
@@ -102,7 +101,6 @@ function updatePlayerStates(states) {
       box.classList.add('player-box' + boxIndex);
       playerReadyContainer.appendChild(box);
       playerBoxes[boxIndex] = box;
-      console.log(`Created box for player ${boxIndex}`);
     }
 
 
@@ -138,18 +136,8 @@ function updatePlayerStates(states) {
 
   }
 
-  // Enable or disable the start game button based on the player states
   const canStart = Object.values(states).length > 0 && Object.values(states).every(player => player.ready);
   startGameButton.disabled = !canStart;
-}
-
-function changeBackgroundColor(color) {
-  console.log('Changing background color to:', color);
-  document.body.style.backgroundColor = color;
-  setTimeout(() => {
-    console.log('Resetting background color to black');
-    document.body.style.backgroundColor = '#000';
-  }, 200);
 }
 
 function showError(message) {

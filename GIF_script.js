@@ -13,7 +13,7 @@ gifImage1.src = staticSrc1;
 gifImage2.src = staticSrc2;
 
 // Function to handle key press events
-document.addEventListener('keydown', function(event) {
+document.addEventListener('keydown', function (event) {
     if (event.key === '1') {
         // Play first GIF on key '1'
         gifImage1.src = gifSrc1;
