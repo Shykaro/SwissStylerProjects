@@ -1,3 +1,36 @@
+import config from './config.js'; // Importieren der Konfigurationsdatei
+
+const socket = new WebSocket(config['websocket-url']); // Verwenden der WebSocket-URL aus der Konfiguration
+
+socket.addEventListener('open', () => {
+  console.log('WebSocket connection opened in game.js');
+});
+
+socket.addEventListener('message', (event) => {
+  const data = JSON.parse(event.data);
+  switch (data[0]) {
+    case 'draw-point':
+      handlePlayerInput(data[1], data[2], data[3]);
+      break;
+    default:
+      console.error(`Unknown message type: ${data[0]}`);
+  }
+});
+
+function handlePlayerInput(x, y, color) {
+  // Logik zur Verarbeitung der Spieler-Eingaben hinzufügen
+  moveBallToTopRightByTouch(x, y, color);
+}
+
+function moveBallToTopRightByTouch(x, y, color) {
+  balls.forEach(ball => {
+    if (isBallInRedArea(ball)) {
+      // Ball bewegen basierend auf x, y und color
+      shootBallToTopRight(ball);
+    }
+  });
+}
+
 function generateCanvases() {
     let numCanvases = document.getElementById('numCanvases').value;
     let container = document.getElementById('canvasContainer');
@@ -199,32 +232,4 @@ function initializeBalls() {
         const targetY = ball.radius + 10;
 
         // Berechnung der Geschwindigkeit in Richtung des Zielpunkts
-        ball.angle = Math.atan2(targetY - ball.y, targetX - ball.x);
-        ball.dx = 5 * Math.cos(ball.angle);
-        ball.dy = 5 * Math.sin(ball.angle);
-    }
-
-    function isBallInRedArea(ball) {
-        const canvas = canvases[ball.canvasIndex];
-        const areaY = canvas.height * 2 / 3;
-        const areaHeight = canvas.height / 3;
-        return ball.y > areaY && ball.y < areaY + areaHeight;
-    }
-
-    window.addEventListener('keydown', (event) => {
-        const key = event.key;
-        if (key >= '1' && key <= '5') {
-            const index = parseInt(key) - 1;
-            if (index < canvases.length) {
-                moveBallToTopRight(index);
-            }
-        }
-    });
-
-    resetGame();
-    drawCircle();
-}
-
-window.onload = function () {
-    generateCanvases();
-}
+        ball.angle = Math.atan2(target

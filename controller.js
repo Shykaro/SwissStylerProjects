@@ -53,6 +53,8 @@ socket.addEventListener('message', (event) => {
 
 startGameButton.addEventListener('click', () => {
   socket.send(JSON.stringify(['start-game']));
+  // Added code to navigate to the game.html page
+  window.location.href = 'game.html';
 });
 
 function updatePlayerCount(playerCount, readyCount) {
