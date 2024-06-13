@@ -19,7 +19,7 @@ const playerSockets = new Set(); // Define playerSockets to store player connect
 let gameStarted = false; // Track the game state
 
 const playerColors = [
-  '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF', '#800000', '#808000', '#008000', '#800080', '#008080', '#000080'
+  '#fb0c0c', '#fed034', '#4043ff', '#ff40fa', '#40ff57', '#fe8021'
 ];
 
 app.use(express.static('.'));
