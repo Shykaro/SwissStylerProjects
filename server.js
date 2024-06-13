@@ -1,7 +1,7 @@
 import express from 'express';
 import http from 'http';
 import { createRequire } from 'module';
-import { v4 as uuidv4 } from 'uuid'; // Correct import for 'uuid'
+import { v4 as uuidv4 } from 'uuid';
 import config from './config.js';
 
 const require = createRequire(import.meta.url);
@@ -15,8 +15,8 @@ const webSocketServer = new WebSocketServer({ server: httpServer });
 
 const playerStates = {};
 const controllerSockets = new Set();
-const playerSockets = new Set(); // Define playerSockets to store player connections
-let gameStarted = false; // Track the game state
+const playerSockets = new Set();
+let gameStarted = false;
 
 const playerColors = [
   '#fb0c0c', '#fed034', '#4043ff', '#ff40fa', '#40ff57', '#fe8021'
@@ -24,6 +24,7 @@ const playerColors = [
 
 app.use(express.static('.'));
 
+// WebSocket connection handling
 webSocketServer.on('connection', (socket, req) => {
   const isController = req.url === '/controller';
   let playerId = null;
@@ -45,7 +46,7 @@ webSocketServer.on('connection', (socket, req) => {
             case 'start-game':
               if (canStartGame()) {
                 gameStarted = true;
-                broadcastToPlayers(['start-game']);
+                broadcastToPlayers(['start-game', Object.keys(playerStates).length]); // Spieleranzahl senden
               } else {
                 socket.send(JSON.stringify(['error', 'Cannot start game. Ensure all players are ready and at least one player is connected.']));
               }
@@ -57,11 +58,11 @@ webSocketServer.on('connection', (socket, req) => {
           console.error('Error parsing message from controller:', error);
         }
       } else {
-        socket.send(''); // ping response
+        socket.send('');
       }
     });
   } else {
-    playerSockets.add(socket); // Add the player socket to the set
+    playerSockets.add(socket);
     socket.on('message', (data) => {
       if (data.length > 0) {
         try {
@@ -93,6 +94,10 @@ webSocketServer.on('connection', (socket, req) => {
             case 'draw-point':
               broadcastToControllers(['draw-point', message[1], message[2], message[3]]);
               break;
+            case 'player-action':
+              const playerIndex = Object.keys(playerStates).indexOf(message[1]);
+              broadcastToControllers(['player-action', playerIndex]);
+              break;
             default:
               break;
           }
@@ -103,7 +108,7 @@ webSocketServer.on('connection', (socket, req) => {
     });
 
     socket.on('close', () => {
-      playerSockets.delete(socket); // Remove the player socket from the set
+      playerSockets.delete(socket);
       if (playerId && playerStates[playerId]) {
         playerStates[playerId].ready = false;
         broadcastToControllers(['player-states', playerStates]);

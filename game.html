@@ -5,14 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bewegende Kreise</title>
     <link rel="stylesheet" href="game_style.css">
-    <script src="game.js" defer></script>
-    <script src="GIF_script.js" defer></script>
+    <script type="module" src="game.js" defer></script>
 </head>
 <body>
     <div>
         <label for="numCanvases">Anzahl der Canvas-Felder:</label>
         <input type="number" id="numCanvases" value="5" min="1">
-        <button onclick="generateCanvases()">Generieren</button>
+        <button id="generateButton">Generieren</button>
     </div>
     <div id="canvasContainer" class="canvas-container"></div>
     <img class="playerGif" id="gif1" src="./GIFs/Blue_front_static.png" alt="GIF 1">

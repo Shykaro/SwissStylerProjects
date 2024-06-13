@@ -20,7 +20,6 @@ socket.addEventListener('message', (event) => {
           playerId = data[1];
           localStorage.setItem('playerId', playerId);
           playerColor = data[2];
-          console.log(`Player index: ${playerId}, color: ${playerColor}`);
           displayMessage('Tap screen to start!', true);
           window.addEventListener('touchend', startPlaying);
           break;
@@ -57,6 +56,7 @@ function sendTouchPosition(event) {
   const y = event.changedTouches ? event.changedTouches[0].pageY : event.pageY;
   console.log('Touch position:', { x, y, color: playerColor });
   sendMessage(['draw-point', x, y, playerColor]);
+  sendMessage(['player-action', playerId]); // Senden Sie die Spieler-ID direkt
 }
 
 function displayMessage(text, title = false) {
