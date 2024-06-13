@@ -32,9 +32,6 @@ socket.addEventListener('message', (event) => {
           playerCount = data[1];
           updatePlayerCount(data[1], data[2]);
           break;
-        case 'draw-point':
-          changeBackgroundColor(data[3]);
-          break;
         case 'player-ready':
           updatePlayerReady(data[1], data[2]);
           break;
@@ -107,13 +104,6 @@ function updatePlayerStates(states) {
 
   const canStart = Object.values(states).length > 0 && Object.values(states).every(player => player.ready);
   startGameButton.disabled = !canStart;
-}
-
-function changeBackgroundColor(color) {
-  document.body.style.backgroundColor = color;
-  setTimeout(() => {
-    document.body.style.backgroundColor = '#000';
-  }, 200);
 }
 
 function showError(message) {

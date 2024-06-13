@@ -52,11 +52,8 @@ function startPlaying() {
 function sendTouchPosition(event) {
   if (!isGameStarted) return;
 
-  const x = event.changedTouches ? event.changedTouches[0].pageX : event.pageX;
-  const y = event.changedTouches ? event.changedTouches[0].pageY : event.pageY;
-  console.log('Touch position:', { x, y, color: playerColor });
-  sendMessage(['draw-point', x, y, playerColor]);
-  sendMessage(['player-action', playerId]); // Senden Sie die Spieler-ID direkt
+  const playerIndex = parseInt(playerId, 10); // Spielerindex ab 1 senden
+  sendMessage(['player-action', playerIndex]);
 }
 
 function displayMessage(text, title = false) {
