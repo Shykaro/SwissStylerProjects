@@ -232,4 +232,32 @@ function initializeBalls() {
         const targetY = ball.radius + 10;
 
         // Berechnung der Geschwindigkeit in Richtung des Zielpunkts
-        ball.angle = Math.atan2(target
+        ball.angle = Math.atan2(targetY - ball.y, targetX - ball.x);
+        ball.dx = 5 * Math.cos(ball.angle);
+        ball.dy = 5 * Math.sin(ball.angle);
+    }
+
+    function isBallInRedArea(ball) {
+        const canvas = canvases[ball.canvasIndex];
+        const areaY = canvas.height * 2 / 3;
+        const areaHeight = canvas.height / 3;
+        return ball.y > areaY && ball.y < areaY + areaHeight;
+    }
+
+    window.addEventListener('keydown', (event) => {
+        const key = event.key;
+        if (key >= '1' && key <= '5') {
+            const index = parseInt(key) - 1;
+            if (index < canvases.length) {
+                moveBallToTopRight(index);
+            }
+        }
+    });
+
+    resetGame();
+    drawCircle();
+}
+
+window.onload = function () {
+    generateCanvases();
+}
