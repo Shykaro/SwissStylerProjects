@@ -5,18 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bewegende Kreise</title>
     <link rel="stylesheet" href="game_style.css">
-    <script src="game.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/gifler@0.1.0/gifler.min.js"></script>
-
 </head>
-    <body>
-        <div>
-            <label for="numCanvases">Anzahl der Canvas-Felder:</label>
-            <input type="number" id="numCanvases" value="5" min="1">
-            <button onclick="generateCanvases()">Generieren</button>
-        </div>
-        <div id="score">Punkte: 0</div> <!-- Punktanzeige -->
-        <div id="canvasContainer" class="canvas-container">
-        </div>
-    </body>
+<body>
+    <div>
+        <label for="numCanvases">Anzahl der Canvas-Felder:</label>
+        <input type="number" id="numCanvases" value="5" min="1">
+        <button id="generateButton">Generieren</button> <!-- ID hinzugefügt -->
+    </div>
+    <div id="score">Punkte: 0</div> <!-- Punktanzeige -->
+    <div id="canvasContainer" class="canvas-container"></div>
+    <script type="module" src="game.js"></script>
+</body>
 </html>

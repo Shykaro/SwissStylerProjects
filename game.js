@@ -1,24 +1,43 @@
 import config from './config.js';
 
 const socket = new WebSocket(config['websocket-url']);
-let playerCount = localStorage.getItem('playerCount'); // Spieleranzahl aus dem localStorage lesen
+let playerCount = parseInt(localStorage.getItem('playerCount')) || 0; // Spieleranzahl aus dem localStorage lesen
 let score = 0;
+let balls = [];
+let canvases = [];
+let redAreaImages = [];
+let topLeftImages = [];
+let topRightImages = [];
 
-function generateCanvases() {
-  let numCanvases = document.getElementById('numCanvases').value;
-  let container = document.getElementById('canvasContainer');
-  container.innerHTML = ''; // Vorherige Canvas-Felder löschen
+// Bildpfade für jeden roten Bereich
+let redAreaImagePaths = [
+  '/GIFs/Blue_back.gif',
+  '/GIFs/Green_back.gif',
+  '/GIFs/Orange_back.gif',
+  '/GIFs/Pink_back.gif',
+  '/GIFs/Yellow_back.gif'
+];
 
-  for (let i = 0; i < numCanvases; i++) {
-    let canvas = document.createElement('canvas');
-    canvas.className = 'canva';
-    container.append(canvas);
-    canvas.id = "gifCanvas-" + i;
-  }
-}
+// Bildpfade für die oberen linken und rechten Ecken
+let topLeftImagePaths = [
+  '/GIFs/Yellow_front.gif',
+  '/GIFs/Blue_front.gif',
+  '/GIFs/Green_front.gif',
+  '/GIFs/Orange_front.gif',
+  '/GIFs/Pink_front.gif'
+];
+
+let topRightImagePaths = [
+  '/GIFs/Green_front.gif',
+  '/GIFs/Orange_front.gif',
+  '/GIFs/Pink_front.gif',
+  '/GIFs/Yellow_front.gif',
+  '/GIFs/Blue_front.gif'
+];
+
 socket.addEventListener('open', () => {
   console.log('WebSocket connection opened in game.js');
-  if (playerCount) {
+  if (playerCount > 0) {
     console.log(`Starting game with ${playerCount} players`);  // Debug-Log hinzugefügt
     generateCanvases(playerCount); // Canvases basierend auf der gespeicherten Spieleranzahl generieren
   }
@@ -45,9 +64,10 @@ socket.addEventListener('message', (event) => {
 function handlePlayerAction(playerIndex) {
   console.log(`Handling action for player ${playerIndex}`);  // Debug-Log hinzugefügt
   moveBallToTopRight(playerIndex);
+  playGifOnce(redAreaImages[playerIndex]); // GIF abspielen, wenn ein Spieler eine Aktion ausführt
 }
 
-function generateCanvases(numCanvases) {
+export function generateCanvases(numCanvases) {
   console.log(`Generating ${numCanvases} canvases`);  // Debug-Log hinzugefügt
   let container = document.getElementById('canvasContainer');
   container.innerHTML = ''; // Vorherige Canvas-Felder löschen
@@ -58,100 +78,44 @@ function generateCanvases(numCanvases) {
     container.appendChild(canvas);
   }
 
+  canvases = document.querySelectorAll('.canva');
   initializeBalls();
 }
 
-// HIERRRRR
-function createBall(canvasIndex, x, y, dx, dy) {
-  return { canvasIndex, x, y, dx, dy, radius: 10, initialRadius: 10, angle: Math.atan2(dy, dx) };
-}
-
-// HIERRRRR
-function resetGame() {
-  balls = [createBall(0, 10, 10, 1, 4)];
-}
-
 function initializeBalls() {
-  let canvases = document.querySelectorAll('.canva');
-  let balls = [createBall(0, 10, 10, 1, 4)];
-
-  // Bildpfade für jeden roten Bereich
-  let redAreaImagePaths = [
-    '/GIFs/Blue_back.gif',
-    '/GIFs/Green_back.gif',
-    '/GIFs/Orange_back.gif',
-    '/GIFs/Pink_back.gif',
-    '/GIFs/Yellow_back.gif'
-  ];
-
-  // Bildpfade für die oberen linken und rechten Ecken
-  let topLeftImagePaths = [
-    '/GIFs/Yellow_front.gif',
-    '/GIFs/Blue_front.gif',
-    '/GIFs/Green_front.gif',
-    '/GIFs/Orange_front.gif',
-    '/GIFs/Pink_front.gif'
-  ];
-
-  let topRightImagePaths = [
-    '/GIFs/Green_front.gif',
-    '/GIFs/Orange_front.gif',
-    '/GIFs/Pink_front.gif',
-    '/GIFs/Yellow_front.gif',
-    '/GIFs/Blue_front.gif'
-  ];
-
-  context.fillStyle = 'rgba(0, 0, 0, 0.05)';
-  context.fillRect(0, 0, canvas.width, canvas.height);
-
+  balls = [createBall(0, 10, 10, 1, 4)]; // Initialisiere die Bälle hier
 
   // Bilder laden und IDs zuweisen
   redAreaImagePaths.forEach((path, index) => {
     let img = new Image();
     img.src = path;
-    img.id = `#gif${index * 3 + 1}`; // ID zuweisen
+    img.id = `gif${index * 3 + 1}`; // ID zuweisen
     redAreaImages[index] = img;
   });
 
   topLeftImagePaths.forEach((path, index) => {
     let img = new Image();
     img.src = path;
-    img.id = `#gif${index * 3 + 2}`; // ID zuweisen
+    img.id = `gif${index * 3 + 2}`; // ID zuweisen
     topLeftImages[index] = img;
   });
-
 
   topRightImagePaths.forEach((path, index) => {
     let img = new Image();
     img.src = path;
-    img.id = `#gif${index * 3 + 3}`; // ID zuweisen
+    img.id = `gif${index * 3 + 3}`; // ID zuweisen
     topRightImages[index] = img;
   });
 
-  ball.angle = Math.atan2(targetY - ball.y, targetX - ball.x);
-  ball.dx = 5 * Math.cos(ball.angle);
-  ball.dy = 5 * Math.sin(ball.angle);
+  drawCircle();
 }
 
-function isBallInRedArea(ball) {
-  const canvas = canvases[ball.canvasIndex];
-  const areaY = canvas.height * 2 / 3;
-  const areaHeight = canvas.height / 3;
-  return ball.y > areaY && ball.y < areaY + areaHeight;
+function createBall(canvasIndex, x, y, dx, dy) {
+  return { canvasIndex, x, y, dx, dy, radius: 10, initialRadius: 10, angle: Math.atan2(dy, dx) };
 }
-
-window.addEventListener('keydown', (event) => {
-  const key = event.key;
-  if (key >= '1' && key <= '5') {
-    const index = parseInt(key) - 1;
-    if (index < canvases.length) {
-      moveBallToTopRight(index);
-    }
-  }
-});
 
 function resetGame() {
-  balls = [createBall(0, 10, 10, 1, 4)]; // Stärker nach unten fliegen und weniger stark nach rechts
+  balls = [createBall(0, 10, 10, 1, 4)];
   score = 0;
   document.getElementById('score').innerText = `Punkte: ${score}`;
 }
@@ -294,43 +258,6 @@ function isBallInRedArea(ball) {
   return ball.y > areaY && ball.y < areaY + areaHeight;
 }
 
-window.addEventListener('keydown', (event) => {
-  const key = event.key;
-  if (key >= '1' && key <= '5') {
-    const index = parseInt(key) - 1;
-    if (index < canvases.length) {
-      moveBallToTopRight(index);
-    }
-  }
-
-});
-
-window.addEventListener('keydown', (event) => {
-  const key = event.key;
-  if (key >= '1' && key <= '5') {
-    const index = parseInt(key) - 1;
-    if (index < canvases.length) {
-      playGifOnce(redAreaImages[index]);
-    }
-  }
-});
-
-firstPlayerImages = [
-  '/GIFs/Yellow_front.gif',
-  '/GIFs/Blue_front.gif',
-  '/GIFs/Green_front.gif',
-  '/GIFs/Orange_front.gif',
-  '/GIFs/Blue_front.gif',
-]
-
-secondPlayerImages = [
-  '/GIFs/Yellow_front.gif',
-  '/GIFs/Blue_front.gif',
-  '/GIFs/Green_front.gif',
-  '/GIFs/Orange_front.gif',
-  '/GIFs/Pink_front.gif'
-]
-
 function playGifOnce(image) {
   if (image) {
     let tempImage = new Image();
@@ -345,11 +272,28 @@ function playGifOnce(image) {
   }
 }
 
+window.addEventListener('keydown', (event) => {
+  const key = event.key;
+  if (key >= '1' && key <= '5') {
+    const index = parseInt(key) - 1;
+    if (index < canvases.length) {
+      moveBallToTopRight(index);
+      playGifOnce(redAreaImages[index]);
+    }
+  }
+});
 
-//     resetGame();
-//     drawCircle();
-// }
+document.addEventListener('DOMContentLoaded', () => {
+  if (playerCount) {
+    console.log(`Generating canvases on page load for ${playerCount} players`); // Debug-Log hinzugefügt
+    generateCanvases(playerCount);
+  } else {
+    console.log('No player count found in localStorage on page load'); // Debug-Log hinzugefügt
+  }
+});
 
-window.onload = function () {
-  generateCanvases();
-}
+document.getElementById('generateButton').addEventListener('click', () => {
+  const numCanvases = parseInt(document.getElementById('numCanvases').value);
+  console.log(`Button clicked to generate ${numCanvases} canvases`);  // Debug-Log hinzugefügt
+  generateCanvases(numCanvases);
+});
