@@ -10,9 +10,17 @@
 }
 
 canvas {
+    position: relative;
     display: block;
     height: 90vh;
     width: 18vw;
     margin: 0px;
     background-color: black;
+}
+
+#score {
+    text-align: center;
+    font-family: arial;
+    font-size: 20pt;
+    color: rgb(25, 25, 25);
 }
