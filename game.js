@@ -54,7 +54,7 @@ socket.addEventListener('message', (event) => {
       break;
     case 'player-action':
       console.log(`Player action received for player index ${data[1]}`);  // Debug-Log hinzugefügt
-      handlePlayerAction(data[1]); // Spieleraktionen (z.B. Drücken auf dem Handy)
+      handlePlayerAction(data[1] - 1); // Spieleraktionen (z.B. Drücken auf dem Handy)
       break;
     default:
       console.error(`Unknown message type: ${data[0]}`);

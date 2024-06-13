@@ -100,6 +100,7 @@ webSocketServer.on('connection', (socket, req) => {
             case 'player-action':
               const playerIndex = parseInt(message[1], 10);
               if (!isNaN(playerIndex)) {
+                console.log(`Forwarding player action for player ${playerIndex - 1}`);
                 broadcastToControllers(['player-action', playerIndex - 1]);
               } else {
                 console.error('Invalid playerIndex received:', message[1]);
