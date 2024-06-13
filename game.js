@@ -135,9 +135,9 @@ function drawCircle() {
     const areaY = canvas.height * 2 / 3;
     const areaWidth = canvas.width;
     const areaHeight = canvas.height / 3;
-    context.fillStyle = 'red';
+    context.fillStyle = 'transparent';
     context.fillRect(areaX, areaY, areaWidth, areaHeight);
-    context.strokeStyle = 'red';
+    context.strokeStyle = 'transparent';
     context.strokeRect(areaX, areaY, areaWidth, areaHeight);
 
     // Bild im roten Bereich zeichnen

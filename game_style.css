@@ -1,5 +1,9 @@
-* {
-    background-color: lightblue;
+@import url("https://fonts.googleapis.com/css2?family=Exo+2:wght@300;700;900&display=swap");
+
+
+body {
+    background: rgb(0, 212, 255);
+    background: linear-gradient(90deg, rgba(0, 212, 255, 1) 0%, rgba(67, 12, 180, 1) 100%);
 }
 
 .canvas-container {
@@ -15,12 +19,29 @@ canvas {
     height: 90vh;
     width: 18vw;
     margin: 0px;
-    background-color: black;
+    background-image: url(canvasBackground02.png);
+    background-size: cover;
 }
 
 #score {
     text-align: center;
-    font-family: arial;
-    font-size: 20pt;
-    color: rgb(25, 25, 25);
+    color: #fde9ff;
+    font-weight: 900;
+    font-size: 36pt;
+    padding: 1%;
+    text-transform: uppercase;
+    text-align: center;
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: hotpink;
+    text-shadow: 3px 1px 1px #4af7ff, 2px 2px 1px #165bfb, 4px 2px 1px #4af7ff,
+        3px 3px 1px #165bfb, 5px 3px 1px #4af7ff, 4px 4px 1px #165bfb,
+        6px 4px 1px #4af7ff, 5px 5px 1px #165bfb, 7px 5px 1px #4af7ff,
+        6px 6px 1px #165bfb, 8px 6px 1px #4af7ff, 7px 7px 1px #165bfb,
+        9px 7px 1px #4af7ff;
+}
+
+.lilita-one-regular {
+    font-family: "Lilita One", sans-serif;
+    font-weight: 400;
+    font-style: normal;
 }
