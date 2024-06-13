@@ -16,6 +16,55 @@ function initializeBalls() {
     let canvases = document.querySelectorAll('.canva');
     let balls = [createBall(0, 10, 10, 1, 4)]; // Stärker nach unten fliegen und weniger stark nach rechts
 
+    // Bildpfade für jeden roten Bereich
+    let redAreaImagePaths = [
+        '/GIFs/Blue_back_static.png',
+        '/GIFs/Green_back_static.png',
+        '/GIFs/Orange_back_static.png',
+        '/GIFs/Pink_back_static.png',
+        '/GIFs/Yellow_back_static.png'
+    ];
+
+    // Bildpfade für die oberen linken und rechten Ecken
+    let topLeftImagePaths = [
+        '/GIFs/Yellow_front_static.png',
+        '/GIFs/Blue_front_static.png',
+        '/GIFs/Green_front_static.png',
+        '/GIFs/Orange_front_static.png',
+        '/GIFs/Pink_front_static.png'
+    ];
+
+    let topRightImagePaths = [
+        '/GIFs/Green_front_static.png',
+        '/GIFs/Orange_front_static.png',
+        '/GIFs/Pink_front_static.png',
+        '/GIFs/Yellow_front_static.png',
+        '/GIFs/Blue_front_static.png'
+    ];
+
+    let redAreaImages = [];
+    let topLeftImages = [];
+    let topRightImages = [];
+
+    // Bilder laden
+    redAreaImagePaths.forEach((path, index) => {
+        let img = new Image();
+        img.src = path;
+        redAreaImages[index] = img;
+    });
+
+    topLeftImagePaths.forEach((path, index) => {
+        let img = new Image();
+        img.src = path;
+        topLeftImages[index] = img;
+    });
+
+    topRightImagePaths.forEach((path, index) => {
+        let img = new Image();
+        img.src = path;
+        topRightImages[index] = img;
+    });
+
     function createBall(canvasIndex, x, y, dx, dy) {
         return { canvasIndex, x, y, dx, dy, radius: 10, initialRadius: 10, angle: Math.atan2(dy, dx) };
     }
@@ -43,6 +92,21 @@ function initializeBalls() {
             context.fillRect(areaX, areaY, areaWidth, areaHeight);
             context.strokeStyle = 'red';
             context.strokeRect(areaX, areaY, areaWidth, areaHeight);
+
+            // Bild im roten Bereich zeichnen
+            if (redAreaImages[index]) {
+                context.drawImage(redAreaImages[index], areaX + 25, areaY + 2, areaWidth, areaHeight);
+            }
+
+            // Bild in der oberen linken Ecke zeichnen
+            if (topLeftImages[index]) {
+                context.drawImage(topLeftImages[index], 0, 10, 70, 70);
+            }
+
+            // Bild in der oberen rechten Ecke zeichnen
+            if (topRightImages[index]) {
+                context.drawImage(topRightImages[index], canvas.width - 75, 10, 70, 70);
+            }
 
             // Bälle zeichnen
             balls.forEach(ball => {
@@ -118,7 +182,7 @@ function initializeBalls() {
             if (ball.canvasIndex === index && isBallInRedArea(ball)) {
                 // Geschwindigkeit erhöhen
                 ball.dx *= 1.2;
-                ball.dy *= 20;
+                ball.dy *= 1.2;
                 shootBallToTopRight(ball);
                 const nextCanvasIndex = (ball.canvasIndex + 1) % canvases.length;
                 balls.push(createBall(nextCanvasIndex, 10, 10, 5 * Math.cos(ball.angle), -5 * Math.sin(ball.angle)));
