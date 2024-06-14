@@ -66,8 +66,13 @@ socket.addEventListener('message', (event) => {
 function handlePlayerAction(playerIndex) {
   console.log(`Handling action for player ${playerIndex}`);
   if (playerIndex >= 0 && playerIndex < redAreaImages.length) {
+    ballClicked = true;
+    playSound();
     moveBallToTopRight(playerIndex);
     playGifOnce(redAreaImages[playerIndex], playerIndex); // GIF abspielen, wenn ein Spieler eine Aktion ausführt
+    setTimeout(() => {
+      ballClicked = false;
+    }, 500);
   } else {
     console.error(`Invalid player index: ${playerIndex}`);
   }
