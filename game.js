@@ -257,7 +257,11 @@ function updateBall(ball) {
 
   // Wenn der Ball die Unterseite erreicht, das Spiel zurücksetzen
   if (ball.y + ball.radius > h) {
-    resetGame();
+    showPopup(score);
+    setTimeout(() => {
+      resetGame();
+    }, 5000);
+
     return;
   }
 
@@ -357,6 +361,24 @@ function playSound() {
   var sound = new Audio('baseballHit.mp3');
   sound.play();
 }
+
+function showPopup(points) {
+  const popup = document.getElementById('popup');
+  const popupText = document.getElementById('popup-text');
+
+  popupText.innerText = `Punkte: ${points}`;
+  popup.classList.remove('hidden');
+
+  setTimeout(() => {
+    popup.classList.add('hidden');
+    resetGame(); // Spiel nach dem Ausblenden des Pop-ups neu starten
+  }, 5000); // Pop-up nach 5 Sekunden ausblenden
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const popup = document.getElementById('popup');
+  popup.classList.add('hidden');
+});
 
 document.addEventListener('DOMContentLoaded', () => {
   if (playerCount) {
