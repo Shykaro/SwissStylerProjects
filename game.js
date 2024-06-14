@@ -252,6 +252,7 @@ function updateBall(ball) {
     const nextCanvasIndex = (ball.canvasIndex + 1) % canvases.length;
     balls.push(createBall(nextCanvasIndex, 10, 10, 5 * Math.cos(ball.angle), -5 * Math.sin(ball.angle)));
     balls = balls.filter(b => b !== ball); // Ball entfernen
+    balls.pop();
     return;
   }
 
