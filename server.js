@@ -1,3 +1,4 @@
+// existing imports
 import express from 'express';
 import http from 'http';
 import { createRequire } from 'module';
@@ -15,6 +16,7 @@ const webSocketServer = new WebSocketServer({ server: httpServer });
 const playerStates = {};
 const controllerSockets = new Set();
 const playerSockets = new Map();
+const gameSockets = new Set();
 let gameStarted = false;
 let nextPlayerId = 1;
 
@@ -27,6 +29,7 @@ app.use(express.static('.'));
 // WebSocket connection handling
 webSocketServer.on('connection', (socket, req) => {
   const isController = req.url === '/controller';
+  const isGame = req.url === '/game';
   let playerId = null;
 
   if (isController) {
@@ -62,6 +65,36 @@ webSocketServer.on('connection', (socket, req) => {
         }
       } else {
         socket.send('');
+      }
+    });
+  } else if (isGame) {
+    gameSockets.add(socket);
+    
+    socket.on('close', () => {
+      gameSockets.delete(socket);
+    });
+
+    socket.on('message', (data) => {
+      if (data.length > 0) {
+        try {
+          const message = JSON.parse(data);
+          console.log('Message received from game:', message);
+          switch (message[0]) {
+            case 'player-action':
+              const playerIndex = parseInt(message[1], 10);
+              if (!isNaN(playerIndex)) {
+                console.log(`Forwarding player action for player ${playerIndex - 1}`);
+                broadcastToGame(['player-action', playerIndex - 1]);
+              } else {
+                console.error('Invalid playerIndex received:', message[1]);
+              }
+              break;
+            default:
+              break;
+          }
+        } catch (error) {
+          console.error('Error parsing message from game:', error);
+        }
       }
     });
   } else {
@@ -101,7 +134,7 @@ webSocketServer.on('connection', (socket, req) => {
               const playerIndex = parseInt(message[1], 10);
               if (!isNaN(playerIndex)) {
                 console.log(`Forwarding player action for player ${playerIndex - 1}`);
-                broadcastToControllers(['player-action', playerIndex - 1]);
+                broadcastToGame(['player-action', playerIndex - 1]);
               } else {
                 console.error('Invalid playerIndex received:', message[1]);
               }
@@ -141,6 +174,14 @@ function broadcastToPlayers(message) {
   console.log('Broadcasting to players:', str);
   for (const playerSocket of playerSockets.keys()) {
     playerSocket.send(str);
+  }
+}
+
+function broadcastToGame(message) {
+  const str = JSON.stringify(message);
+  console.log('Broadcasting to game:', str);
+  for (const gameSocket of gameSockets) {
+    gameSocket.send(str);
   }
 }
 

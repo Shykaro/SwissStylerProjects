@@ -1,6 +1,6 @@
 import config from './config.js';
 
-const socket = new WebSocket(config['websocket-url']);
+const socket = new WebSocket(`${config['websocket-url']}game`);
 let playerCount = parseInt(localStorage.getItem('playerCount')) || 0; // Spieleranzahl aus dem localStorage lesen
 let score = 0;
 let balls = [];
@@ -38,23 +38,25 @@ let topRightImagePaths = [
 socket.addEventListener('open', () => {
   console.log('WebSocket connection opened in game.js');
   if (playerCount > 0) {
-    console.log(`Starting game with ${playerCount} players`);  // Debug-Log hinzugefügt
+    console.log(`Starting game with ${playerCount} players`);
     generateCanvases(playerCount); // Canvases basierend auf der gespeicherten Spieleranzahl generieren
   }
 });
+
 console.log(socket);
+
 socket.addEventListener('message', (event) => {
   const data = JSON.parse(event.data);
-  console.log('Message received in game.js:', data);  // Debug-Log hinzugefügt
+  console.log('Message received in game.js:', data);
   switch (data[0]) {
     case 'start-game':
       playerCount = data[1]; // Anzahl der Spieler erhalten
-      console.log(`Starting game with ${playerCount} players`);  // Debug-Log hinzugefügt
+      console.log(`Starting game with ${playerCount} players`);
       generateCanvases(playerCount);
       break;
     case 'player-action':
-      console.log(`Player action received for player index ${data[1]}`);  // Debug-Log hinzugefügt
-      handlePlayerAction(data[1] - 1); // Spieleraktionen (z.B. Drücken auf dem Handy)
+      console.log(`Player action received for player index ${data[1]}`);
+      handlePlayerAction(data[1]); // Spieleraktionen (z.B. Drücken auf dem Handy)
       break;
     default:
       console.error(`Unknown message type: ${data[0]}`);
@@ -62,13 +64,47 @@ socket.addEventListener('message', (event) => {
 });
 
 function handlePlayerAction(playerIndex) {
-  console.log(`Handling action for player ${playerIndex}`);  // Debug-Log hinzugefügt
-  moveBallToTopRight(playerIndex);
-  playGifOnce(redAreaImages[playerIndex]); // GIF abspielen, wenn ein Spieler eine Aktion ausführt
+  console.log(`Handling action for player ${playerIndex}`);
+  if (playerIndex >= 0 && playerIndex < redAreaImages.length) {
+    moveBallToTopRight(playerIndex);
+    playGifOnce(redAreaImages[playerIndex], playerIndex); // GIF abspielen, wenn ein Spieler eine Aktion ausführt
+  } else {
+    console.error(`Invalid player index: ${playerIndex}`);
+  }
+}
+
+function playGifOnce(image, index) {
+  if (image && allPlayerFrames[index]) {
+    // Preload all images for the given index
+    preloadImages(allPlayerFrames[index]);
+
+    // Set the first frame immediately
+    image.src = allPlayerFrames[index][0];
+
+    // Loop through all frames and set a timeout for each frame with an increasing delay
+    for (let i = 1; i < allPlayerFrames[index].length; i++) {
+      setTimeout(() => {
+        image.src = allPlayerFrames[index][i];
+      }, 30 * i);
+    }
+  } else {
+    console.error(`Invalid image or frames for index: ${index}`);
+  }
+}
+
+function preloadImages(frames) {
+  if (frames) {
+    frames.forEach(src => {
+      const img = new Image();
+      img.src = src;
+    });
+  } else {
+    console.error('No frames provided to preload');
+  }
 }
 
 export function generateCanvases(numCanvases) {
-  console.log(`Generating ${numCanvases} canvases`);  // Debug-Log hinzugefügt
+  console.log(`Generating ${numCanvases} canvases`);
   let container = document.getElementById('canvasContainer');
   container.innerHTML = ''; // Vorherige Canvas-Felder löschen
 
@@ -131,22 +167,21 @@ function drawCircle() {
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     // Bereich zeichnen und füllen
-    const areaX = 0;  // Viertel des Canvas
-    const areaY = canvas.height * 4 / 5;  // Unteres Viertel des Canvas
-    const areaWidth = canvas.width;  // Halbe Breite des Canvas
-    const areaHeight = canvas.height / 6;  // Ein Sechstel der Höhe des Canvas
+    const areaX = 0;
+    const areaY = canvas.height * 4 / 5;
+    const areaWidth = canvas.width;
+    const areaHeight = canvas.height / 6;
     let gradient = context.createLinearGradient(areaX, areaY, areaX, areaY + areaHeight);
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');  // Transparent
-    gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.2)');  // Leicht grün
-    gradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.3)');  // Weniger transparent grün
-    gradient.addColorStop(0.6, 'rgba(255, 255, 255, 0.3)');  // Stärker grün
-    gradient.addColorStop(0.8, 'rgba(255, 255, 255, 0.2)');  // Weniger transparent grün
-    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');  // Leicht grün
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');
+    gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.2)');
+    gradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.3)');
+    gradient.addColorStop(0.6, 'rgba(255, 255, 255, 0.3)');
+    gradient.addColorStop(0.8, 'rgba(255, 255, 255, 0.2)');
+    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
     context.fillStyle = gradient;
     context.fillRect(areaX, areaY, areaWidth, areaHeight);
     context.strokeStyle = 'transparent';
     context.strokeRect(areaX, areaY, areaWidth, areaHeight);
-
 
     // Bild im roten Bereich zeichnen
     if (redAreaImages[index]) {
@@ -203,7 +238,6 @@ function updateBall(ball) {
     const nextCanvasIndex = (ball.canvasIndex + 1) % canvases.length;
     balls.push(createBall(nextCanvasIndex, 10, 10, 5 * Math.cos(ball.angle), -5 * Math.sin(ball.angle)));
     balls = balls.filter(b => b !== ball); // Ball entfernen
-    balls.pop(); // Ball entfernen
     return;
   }
 
@@ -266,8 +300,13 @@ function isBallInRedArea(ball) {
   return ball.y > areaY && ball.y < areaY + areaHeight;
 }
 
-let allPlayerFrames = []
-
+let allPlayerFrames = [
+  // Beispiel-Daten: Liste von Frame-URLs für jeden Spieler
+  // Fügen Sie reale Daten entsprechend hinzu
+  ['frame1.png', 'frame2.png', 'frame3.png'], // Spieler 1 Frames
+  ['frame1.png', 'frame2.png', 'frame3.png'], // Spieler 2 Frames
+  // Fügen Sie mehr Frames für andere Spieler hinzu...
+];
 
 function loadFrames() {
   fetch('playerFrames.json')
@@ -281,45 +320,18 @@ function loadFrames() {
 
 window.onload = loadFrames;
 
-allPlayerFrames.forEach(frames => preloadImages(frames));
-function preloadImages(frames) {
-  frames.forEach(src => {
-    const img = new Image();
-    img.src = src;
-  });
-}
-
-function playGifOnce(image, index) {
-  if (image) {
-    // Preload all images for the given index
-    preloadImages(allPlayerFrames[index]);
-
-    // Set the first frame immediately
-    image.src = allPlayerFrames[index][0];
-
-    // Loop through all frames and set a timeout for each frame with an increasing delay
-    for (let i = 1; i < allPlayerFrames[index].length; i++) {
-      setTimeout(() => {
-        image.src = allPlayerFrames[index][i];
-      }, 30 * i);
-    }
-  }
-}
-
-// Beispiel-Aufruf zum Preloaden aller Bilder beim Start
-let ballClicked = false
 window.addEventListener('keydown', (event) => {
   if (!ballClicked) {
     const key = event.key;
     if (key >= '1' && key <= '5') {
       const index = parseInt(key) - 1;
       if (index < canvases.length) {
-        ballClicked = true
+        ballClicked = true;
         playSound();
         moveBallToTopRight(index);
         playGifOnce(redAreaImages[index], index);
         setTimeout(() => {
-          ballClicked = false
+          ballClicked = false;
         }, 500);
       }
     }
@@ -333,15 +345,15 @@ function playSound() {
 
 document.addEventListener('DOMContentLoaded', () => {
   if (playerCount) {
-    console.log(`Generating canvases on page load for ${playerCount} players`); // Debug-Log hinzugefügt
+    console.log(`Generating canvases on page load for ${playerCount} players`);
     generateCanvases(playerCount);
   } else {
-    console.log('No player count found in localStorage on page load'); // Debug-Log hinzugefügt
+    console.log('No player count found in localStorage on page load');
   }
 });
 
 document.getElementById('generateButton').addEventListener('click', () => {
   const numCanvases = parseInt(document.getElementById('numCanvases').value);
-  console.log(`Button clicked to generate ${numCanvases} canvases`);  // Debug-Log hinzugefügt
+  console.log(`Button clicked to generate ${numCanvases} canvases`);
   generateCanvases(numCanvases);
 });
