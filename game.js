@@ -8,6 +8,8 @@ let canvases = [];
 let redAreaImages = [];
 let topLeftImages = [];
 let topRightImages = [];
+let ballClicked = false;
+let actionInProgress = false; // Flag to prevent duplicate processing
 
 // Bildpfade für jeden roten Bereich
 let redAreaImagePaths = [
@@ -57,6 +59,10 @@ socket.addEventListener('message', (event) => {
     case 'player-action':
       console.log(`Player action received for player index ${data[1]}`);
       handlePlayerAction(data[1]); // Spieleraktionen (z.B. Drücken auf dem Handy)
+      if (!actionInProgress) {
+        console.log(`Player action received for player index ${data[1]}`);
+        handlePlayerAction(data[1]); // Spieleraktionen (z.B. Drücken auf dem Handy)
+      }
       break;
     default:
       console.error(`Unknown message type: ${data[0]}`);
@@ -66,6 +72,7 @@ socket.addEventListener('message', (event) => {
 function handlePlayerAction(playerIndex) {
   console.log(`Handling action for player ${playerIndex}`);
   if (playerIndex >= 0 && playerIndex < redAreaImages.length) {
+
     if (!ballClicked) {
     ballClicked = true;
     playSound();
@@ -74,6 +81,16 @@ function handlePlayerAction(playerIndex) {
     setTimeout(() => {
       ballClicked = false;
     }, 500);}
+      ballClicked = true;
+      actionInProgress = true; // Set flag to indicate action is in progress
+      playSound();
+      moveBallToTopRight(playerIndex);
+      playGifOnce(redAreaImages[playerIndex], playerIndex); // GIF abspielen, wenn ein Spieler eine Aktion ausführt
+      setTimeout(() => {
+        ballClicked = false;
+        actionInProgress = false; // Reset flag after action is processed
+      }, 500);
+    }
   } else {
     console.error(`Invalid player index: ${playerIndex}`);
   }
@@ -289,6 +306,7 @@ function moveBallToTopRight(index) {
 }
 
 function shootBallToTopRight(ball) {
+  console.log("ShootBattTopRight wurde aufgerufen");
   const canvas = canvases[ball.canvasIndex];
   const targetX = canvas.clientWidth - ball.radius - 10; // Zielposition nahe der oberen rechten Ecke
   const targetY = ball.radius + 10;
