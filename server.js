@@ -19,7 +19,7 @@ let gameStarted = false;
 let nextPlayerId = 1;
 
 const playerColors = [
-  '#fb0c0c', '#fed034', '#4043ff', '#ff40fa', '#40ff57', '#fe8021'
+  '#4043ff', '#40ff57', '#fe8021', '#ff40fa', '#fed034'
 ];
 
 app.use(express.static('.'));

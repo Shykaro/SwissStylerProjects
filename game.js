@@ -311,7 +311,7 @@ window.addEventListener('keydown', (event) => {
         playGifOnce(redAreaImages[index], index);
         setTimeout(() => {
           ballClicked = false
-        }, 800);
+        }, 500);
       }
     }
   }
