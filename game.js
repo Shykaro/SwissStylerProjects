@@ -131,18 +131,26 @@ function drawCircle() {
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     // Bereich zeichnen und füllen
-    const areaX = 0;
-    const areaY = canvas.height * 2 / 3;
-    const areaWidth = canvas.width;
-    const areaHeight = canvas.height / 3;
-    context.fillStyle = 'transparent';
+    const areaX = 0;  // Viertel des Canvas
+    const areaY = canvas.height * 4 / 5;  // Unteres Viertel des Canvas
+    const areaWidth = canvas.width;  // Halbe Breite des Canvas
+    const areaHeight = canvas.height / 6;  // Ein Sechstel der Höhe des Canvas
+    let gradient = context.createLinearGradient(areaX, areaY, areaX, areaY + areaHeight);
+    gradient.addColorStop(0, 'rgba(255, 255, 255, 0)');  // Transparent
+    gradient.addColorStop(0.2, 'rgba(255, 255, 255, 0.2)');  // Leicht grün
+    gradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.3)');  // Weniger transparent grün
+    gradient.addColorStop(0.6, 'rgba(255, 255, 255, 0.3)');  // Stärker grün
+    gradient.addColorStop(0.8, 'rgba(255, 255, 255, 0.2)');  // Weniger transparent grün
+    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');  // Leicht grün
+    context.fillStyle = gradient;
     context.fillRect(areaX, areaY, areaWidth, areaHeight);
     context.strokeStyle = 'transparent';
     context.strokeRect(areaX, areaY, areaWidth, areaHeight);
 
+
     // Bild im roten Bereich zeichnen
     if (redAreaImages[index]) {
-      context.drawImage(redAreaImages[index], areaX + 25, areaY + 2, areaWidth, areaHeight);
+      context.drawImage(redAreaImages[index], areaX, areaY - 125, 275, 275);
     }
 
     // Bild in der oberen linken Ecke zeichnen
@@ -228,8 +236,8 @@ function moveBallToTopRight(index) {
   balls.forEach(ball => {
     if (ball.canvasIndex === index && isBallInRedArea(ball)) {
       // Geschwindigkeit erhöhen
-      ball.dx *= 1.2;
-      ball.dy *= 1.2;
+      ball.dx = 1.2;
+      ball.dy = 1.2;
       shootBallToTopRight(ball);
       const nextCanvasIndex = (ball.canvasIndex + 1) % canvases.length;
       balls.push(createBall(nextCanvasIndex, 10, 10, 5 * Math.cos(ball.angle), -5 * Math.sin(ball.angle)));
@@ -253,8 +261,8 @@ function shootBallToTopRight(ball) {
 
 function isBallInRedArea(ball) {
   const canvas = canvases[ball.canvasIndex];
-  const areaY = canvas.height * 2 / 3;
-  const areaHeight = canvas.height / 3;
+  const areaY = canvas.height * 4 / 5;
+  const areaHeight = canvas.height / 6;
   return ball.y > areaY && ball.y < areaY + areaHeight;
 }
 
@@ -263,12 +271,12 @@ let allPlayerFrames = []
 
 function loadFrames() {
   fetch('playerFrames.json')
-  .then(response => response.json())
-  .then(data => {
-    allPlayerFrames = data.allPlayerFrames; // Speichern der Daten in der globalen Variable
-    allPlayerFrames.forEach(frames => preloadImages(frames));
-  })
-  .catch(error => console.error('Error loading frames:', error));
+    .then(response => response.json())
+    .then(data => {
+      allPlayerFrames = data.allPlayerFrames; // Speichern der Daten in der globalen Variable
+      allPlayerFrames.forEach(frames => preloadImages(frames));
+    })
+    .catch(error => console.error('Error loading frames:', error));
 }
 
 window.onload = loadFrames;
@@ -301,12 +309,13 @@ function playGifOnce(image, index) {
 // Beispiel-Aufruf zum Preloaden aller Bilder beim Start
 let ballClicked = false
 window.addEventListener('keydown', (event) => {
-  if (!ballClicked) { 
+  if (!ballClicked) {
     const key = event.key;
     if (key >= '1' && key <= '5') {
       const index = parseInt(key) - 1;
       if (index < canvases.length) {
         ballClicked = true
+        playSound();
         moveBallToTopRight(index);
         playGifOnce(redAreaImages[index], index);
         setTimeout(() => {
@@ -316,6 +325,11 @@ window.addEventListener('keydown', (event) => {
     }
   }
 });
+
+function playSound() {
+  var sound = new Audio('baseballHit.mp3');
+  sound.play();
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   if (playerCount) {
