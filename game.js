@@ -57,8 +57,6 @@ socket.addEventListener('message', (event) => {
       generateCanvases(playerCount);
       break;
     case 'player-action':
-      console.log(`Player action received for player index ${data[1]}`);
-      handlePlayerAction(data[1]); // Spieleraktionen (z.B. Drücken auf dem Handy)
       if (!actionInProgress) {
         console.log(`Player action received for player index ${data[1]}`);
         handlePlayerAction(data[1]); // Spieleraktionen (z.B. Drücken auf dem Handy)
@@ -74,13 +72,6 @@ function handlePlayerAction(playerIndex) {
   if (playerIndex >= 0 && playerIndex < redAreaImages.length) {
 
     if (!ballClicked) {
-    ballClicked = true;
-    playSound();
-    moveBallToTopRight(playerIndex);
-    playGifOnce(redAreaImages[playerIndex], playerIndex); // GIF abspielen, wenn ein Spieler eine Aktion ausführt
-    setTimeout(() => {
-      ballClicked = false;
-    }, 500);}
       ballClicked = true;
       actionInProgress = true; // Set flag to indicate action is in progress
       playSound();
